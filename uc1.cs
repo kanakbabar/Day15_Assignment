@@ -4,56 +4,60 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Day15_Assignment
+namespace HashTable
 {
-    
-    
-        class UC1<T> where T : IComparable<T>
+       class UC1<K, V>
         {
-            public T NodeData { get; set; }
+            private readonly int size;
+            private readonly LinkedList<KeyValue<K, V>>[] items;
+            public UC1(int size)
+            {
+                this.size = size;
+                this.items = new LinkedList<KeyValue<K, V>>[size];
+            }
+            protected int GetArrayPosition(K key)
+            {
+                int position = key.GetHashCode() % size;
+                return Math.Abs(position);
+            }
+            protected LinkedList<KeyValue<K, V>> GetLinkedList(int position)
+            {
+                LinkedList<KeyValue<K, V>> linkedList = items[position];
+                if (linkedList == null)
+                {
+                    linkedList = new LinkedList<KeyValue<K, V>>();
+                    items[position] = linkedList;
+                }
+                return linkedList;
+            }
+            public void Add(K key, V value)
+            {
+                int position = GetArrayPosition(key);  // |-5| =5 |3|=3 |-3|=3
+                LinkedList<KeyValue<K, V>> linkedList = GetLinkedList(position);
+                KeyValue<K, V> item = new KeyValue<K, V>() { Key = key, Value = value };
+                linkedList.AddLast(item);
+            }
 
-            public UC1<T> leftTree { get; set; }
-            public UC1<T> rightTree { get; set; }
-            public UC1(T nodeData)
+            public V Get(K key)
             {
-                this.NodeData = nodeData;
-                this.rightTree = null;
-                this.leftTree = null;
+                int position = GetArrayPosition(key);
+                LinkedList<KeyValue<K, V>> linkedList = GetLinkedList(position);
+                foreach (KeyValue<K, V> item in linkedList)
+                {
+                    if (item.Key.Equals(key))
+                    {
+                        return item.Value;
+                    }
+                }
+                return default(V);
             }
-            int leftCount = 0, rightCount = 0;
-            bool result = false;
-            public void Insert(T item)
-            {
-                T currentNodeValue = this.NodeData;
-                if ((currentNodeValue.CompareTo(item)) > 0)
-                {
-                    if (this.leftTree == null)
-                        this.leftTree = new UC1<T>(item);
-                    else
-                        this.leftTree.Insert(item);
-                }
-                else
-                {
-                    if (this.rightTree == null)
-                        this.rightTree = new UC1<T>(item);
-                    else
-                        this.rightTree.Insert(item);
-                }
-            }
-            public void Display()
-            {
-                if (this.leftTree != null)
-                {
-                    this.leftCount++;
-                    this.leftTree.Display();
-                }
-                Console.WriteLine(this.NodeData.ToString());
-                if (this.rightTree != null)
-                {
-                    this.rightCount++;
-                    this.rightTree.Display();
-                }
-            }
+
+
+        }
+        public struct KeyValue<k, v>
+        {
+            public k Key { get; set; }
+            public v Value { get; set; }
         }
     
 }

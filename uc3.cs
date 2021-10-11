@@ -4,84 +4,78 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Day15_Assignment
+namespace HashTable
 {
-  
+
     
-        class UC3<T> where T : IComparable<T>
+        class UC3<K, V>
         {
-            public T NodeData { get; set; }
-
-            public UC3<T> leftTree { get; set; }
-            public UC3<T> rightTree { get; set; }
-            public UC3(T nodeData)
+            private readonly int size;
+            private readonly LinkedList<KeyValue<K, V>>[] items;
+            public UC3(int size)
             {
-                this.NodeData = nodeData;
-                this.rightTree = null;
-                this.leftTree = null;
+                this.size = size;
+                this.items = new LinkedList<KeyValue<K, V>>[size];
             }
-
-
-            int leftCount = 0, rightCount = 0;
-            bool result = false;
-
-
-            public void Insert(T item)
+            public void Add(K key, V value)
             {
-                T currentNodeValue = this.NodeData;
-                if ((currentNodeValue.CompareTo(item)) > 0)
-                {
-                    if (this.leftTree == null)
-                        this.leftTree = new UC3<T>(item);
-                    else
-                        this.leftTree.Insert(item);
-                }
-                else
-                {
-                    if (this.rightTree == null)
-                        this.rightTree = new UC3<T>(item);
-                    else
-                        this.rightTree.Insert(item);
-                }
+                int position = GetArrayPosition(key);  // |-5| =5 |3|=3 |-3|=3
+                LinkedList<KeyValue<K, V>> linkedList = GetLinkedList(position);
+                KeyValue<K, V> item = new KeyValue<K, V>() { Key = key, Value = value };
+                linkedList.AddLast(item);
             }
-
-            public bool Search(T element, UC3<T> node)
+            public void Remove(K key)
             {
-                if (node == null)
-                    return false;
-
-                if (node.NodeData.Equals(element))
+                int position = GetArrayPosition(key);
+                LinkedList<KeyValue<K, V>> linkedList = GetLinkedList(position);
+                bool itemFound = false;
+                KeyValue<K, V> foundItem = default(KeyValue<K, V>);
+                foreach (KeyValue<K, V> item in linkedList)
                 {
-                    Console.WriteLine("Found the Element \n" + " " + node.NodeData);
-                    result = true;
+                    if (item.Key.Equals(key))
+                    {
+                        itemFound = true;
+                        foundItem = item;
+                    }
                 }
-                else
-                    Console.WriteLine("Current element is {0} in BST", node.NodeData);
-
-                if (element.CompareTo(node.NodeData) < 0)
-                    Search(element, node.leftTree);
-
-                if (element.CompareTo(node.NodeData) > 0)
-                    Search(element, node.rightTree);
-
-                return result;
-            }
-
-            public void Display()
-            {
-                if (this.leftTree != null)
+                if (itemFound)
                 {
-                    this.leftCount++;
-                    this.leftTree.Display();
-                }
-                Console.WriteLine(this.NodeData.ToString());
-                if (this.rightTree != null)
-                {
-                    this.rightCount++;
-                    this.rightTree.Display();
+                    linkedList.Remove(foundItem);
                 }
             }
-
+            public V Get(K key)
+            {
+                int position = GetArrayPosition(key);
+                LinkedList<KeyValue<K, V>> linkedList = GetLinkedList(position);
+                foreach (KeyValue<K, V> item in linkedList)
+                {
+                    if (item.Key.Equals(key))
+                    {
+                        return item.Value;
+                    }
+                }
+                return default(V);
+            }
+            protected int GetArrayPosition(K key)
+            {
+                int position = key.GetHashCode() % size;
+                return Math.Abs(position);
+            }
+            protected LinkedList<KeyValue<K, V>> GetLinkedList(int position)
+            {
+                LinkedList<KeyValue<K, V>> linkedList = items[position];
+                if (linkedList == null)
+                {
+                    linkedList = new LinkedList<KeyValue<K, V>>();
+                    items[position] = linkedList;
+                }
+                return linkedList;
+            }
+        }
+        public struct KeyValue<k, v>
+        {
+            public k Key { get; set; }
+            public v Value { get; set; }
         }
     
 }
